@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#060607" />
+  <meta
+    name="description"
+    content="Canon AE-1 — a 35 mm film camera introduced in 1976. A cinematic single-page experience built around the instrument itself."
+  />
+
+  <title>CANON AE-1 — See The World One Frame At A Time</title>
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="CANON AE-1 — Analog Photography" />
+  <meta property="og:description" content="A 35 mm film camera. An enduring perspective." />
+  <meta property="og:image" content="./assets/images/hero-camera.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CANON AE-1 — Analog Photography" />
+  <meta name="twitter:description" content="A 35 mm film camera. An enduring perspective." />
+  <meta name="twitter:image" content="./assets/images/hero-camera.png" />
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Cabinet Grotesk + Satoshi (Fontshare) -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800,900&f[]=satoshi@400,500,700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --font-display: "Cabinet Grotesk", "Satoshi", sans-serif;
+      --font-sans: "Satoshi", system-ui, sans-serif;
+
+      --color-base: #060607;
+      --color-surface: #0c0d10;
+      --color-ink: #edeae4;
+      --color-muted: #8b8b90;
+      --color-amber: #c9a876;
+      --color-line: rgba(255, 255, 255, 0.08);
+    }
+  </style>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --base: #060607;
+      --surface: #0c0d10;
+      --ink: #edeae4;
+      --muted: #8b8b90;
+      --amber: #c9a876;
+      --line: rgba(255, 255, 255, 0.08);
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--base);
+    }
+
+    body {
+      margin: 0;
+      overflow-x: clip;
+      background: var(--base);
+      color: var(--ink);
+      font-family: "Satoshi", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .font-display {
+      font-family: "Cabinet Grotesk", "Satoshi", sans-serif;
+    }
+
+    /* Ambient background + grain */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(60rem 40rem at 78% -8%, rgba(201, 168, 118, 0.13), transparent 60%),
+        radial-gradient(52rem 38rem at 8% 22%, rgba(88, 104, 132, 0.14), transparent 62%),
+        radial-gradient(48rem 42rem at 50% 118%, rgba(201, 168, 118, 0.08), transparent 60%);
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.05;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .hairline {
+      border: 1px solid var(--line);
+    }
+
+    .glass {
+      background: rgba(12, 13, 16, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+    }
+
+    .media-img {
+      transform: scale(var(--s, 1));
+      transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .group:hover .media-img {
+      transform: scale(1.06);
+    }
+
+/* Cinematic staging: hero line masks + pre-paint hides.
+       The .js class is added by the inline script at parse time, so these
+       hidden states exist before first paint (no flash). They are applied
+       only while motion is allowed AND the runtime is live; under reduced
+       motion or a missing GSAP the class list is left clean and the content
+       simply stays visible. */
+.hero-line {
+        display: block;
+        overflow: hidden;
+      }
+
+      .hero-line > span:not(.hero-word) {
+        display: block;
+        will-change: transform;
+      }
+
+      .hero-word {
+        display: inline-block;
+        will-change: transform, opacity;
+      }
+
+.hero-emphasis {
+        font-style: italic;
+        font-weight: 600;
+      }
+
+      #ae1-hero-headline {
+        display: block;
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 760px;
+        margin: 28px 0 24px;
+        color: #f5f1e9;
+        font-family: "Cabinet Grotesk", "Satoshi", sans-serif;
+        font-size: clamp(2.8rem, 5.8vw, 5.5rem);
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+      }
+
+      #ae1-hero-headline .hero-emphasis {
+        font-style: italic;
+        font-weight: 600;
+      }
+
+      /* Hero headline entrance — CSS @starting-style equivalent (no JS dependency, runs off main thread) */
+      #ae1-hero-headline .hero-word {
+        opacity: 1;
+        transform: translateY(0);
+        display: inline-block;
+        will-change: transform, opacity;
+        animation: heroWordReveal 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        animation-delay: calc(var(--word-index, 0) * 70ms);
+      }
+
+      @keyframes heroWordReveal {
+        from {
+          opacity: 0;
+          transform: translateY(112%);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #ae1-hero-headline .hero-word {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* GSAP enhancement: if GSAP loads, it will override these animations */
+      .js #ae1-hero-headline .hero-word {
+        animation: none;
+      }
+
+     .type-pill {
+       will-change: transform, opacity;
+     }
+
+@media (prefers-reduced-motion: no-preference) {
+        .js .hero-reveal {
+          opacity: 0;
+        }
+
+        .js .hero-line > span,
+        .js .hero-word {
+          opacity: 0;
+          transform: translateY(112%);
+        }
+      }
+
+    /* Pinned split: sticky left column (CSS) instead of ScrollTrigger pin */
+    @media (min-width: 1024px) {
+      .split-pin {
+        position: sticky;
+        top: 140px;
+      }
+    }
+
+    /* Inline typography image */
+    .type-pill {
+      display: inline-block;
+      width: clamp(3.5rem, 12vw, 9rem);
+      height: clamp(1.6rem, 5vw, 3.4rem);
+      margin-inline: 0.35rem;
+      border-radius: 999px;
+      vertical-align: middle;
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.08) brightness(1.08);
+      transform: translateY(-0.08em);
+    }
+
+    /* Components stage */
+    .dotgrid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .ring-dashed {
+      border: 1px dashed rgba(201, 168, 118, 0.35);
+    }
+
+    /* Interactive 3D exploded view */
+    .comp-item.is-active {
+      border-color: rgba(201, 168, 118, 0.4);
+    }
+
+    .comp-item.is-active h4 {
+      color: var(--amber);
+    }
+
+    .comp-item.is-active .comp-index {
+      color: var(--amber);
+    }
+
+    /* The line-up: stacked editorial cards (scroll-linked deck) */
+    .lineup-stack {
+      --lineup-top: 84px;   /* where the front card parks (below the nav)   */
+      --lineup-peek: 10px;  /* how much of each passed card stays visible   */
+      --lineup-gap: 16px;   /* flow spacing -> scroll distance per card      */
+      position: relative;
+      padding-bottom: 22vh;  /* runway so the last card holds before leaving  */
+    }
+
+    .lineup-card {
+      position: sticky;
+      top: calc(var(--lineup-top) + var(--i, 0) * var(--lineup-peek));
+      margin-bottom: var(--lineup-gap);
+      min-height: 152px;
+      padding: 1.4rem 1.45rem 1.5rem;
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      background: linear-gradient(180deg, #111217 0%, #0b0c0f 100%);
+      box-shadow: 0 26px 44px -36px rgba(0, 0, 0, 0.9);
+      transform-origin: top center;
+      will-change: transform, opacity;
+      transition:
+        border-color 220ms var(--ease-out),
+        color 220ms var(--ease-out);
+    }
+
+    .lineup-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .lineup-card .comp-index,
+    .lineup-card h4 {
+      transition: color 220ms var(--ease-out);
+    }
+
+    .lineup-card.is-current {
+      border-color: rgba(201, 168, 118, 0.45);
+    }
+
+    .lineup-card.is-current .comp-index,
+    .lineup-card.is-current h4 {
+      color: var(--amber);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .lineup-card:hover {
+        border-color: rgba(201, 168, 118, 0.4);
+      }
+
+      .lineup-card:hover .comp-index,
+      .lineup-card:hover h4 {
+        color: var(--amber);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .lineup-stack {
+        --lineup-top: 140px;  /* aligns the deck with the sticky 3D stage */
+        --lineup-peek: 14px;
+        --lineup-gap: 24px;
+      }
+
+      .lineup-card {
+        min-height: 176px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      /* No scroll-linked motion: the cards read as a plain stacked list. */
+      .lineup-stack {
+        padding-bottom: 0;
+      }
+
+      .lineup-card {
+        position: static;
+        top: auto;
+        min-height: 0;
+        transform: none !important;
+        opacity: 1 !important;
+        margin-bottom: 1rem;
+      }
+    }
+
+    #viewerStage {
+      opacity: 0;
+      transition: opacity 700ms ease;
+    }
+
+    #viewer3d.is-ready #viewerStage {
+      opacity: 1;
+    }
+
+    #viewerUI {
+      transition: opacity 700ms ease;
+    }
+
+    .viewer-label {
+      position: absolute;
+      z-index: 30;
+      transform: translate(-50%, calc(-100% - 16px));
+      pointer-events: none;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(6, 6, 7, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .viewer-label .lbl-idx {
+      color: var(--amber);
+      margin-right: 6px;
+    }
+
+    @keyframes floaty {
+      0%,
+      100% {
+        transform: translateY(-7px);
+      }
+      50% {
+        transform: translateY(7px);
+      }
+    }
+
+    .float-slow {
+      animation: floaty 7s ease-in-out infinite;
+    }
+
+    @keyframes spinslow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .ring-spin {
+      animation: spinslow 48s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .float-slow,
+      .ring-spin {
+        animation: none;
+      }
+    }
+
+/* --- Hero camera subtle float + hover tilt (fine pointer only) ---
+       The float runs off the main thread via CSS keyframes.
+       Under reduced motion it is disabled via the media query below. */
+.hero-camera-float {
+  animation: heroCameraFloat 6s ease-in-out infinite;
+}
+@keyframes heroCameraFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-camera-float {
+    animation: none;
+  }
+}
+
+/* Hover tilt: only on devices with hover + fine pointer (not touch) */
+@media (hover: hover) and (pointer: fine) {
+  .hero-obj:hover {
+    transform: translateY(-4px) rotate(0deg);
+    transition: transform 650ms var(--ease-out);
+  }
+}
+
+/* Infinite marquee */
+    .marquee {
+      display: flex;
+      width: max-content;
+      animation: marquee 34s linear infinite;
+    }
+
+    .marquee-group {
+      display: flex;
+      align-items: center;
+      gap: 3.5rem;
+      padding-right: 3.5rem;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .marquee {
+        animation: none;
+      }
+
+      .media-img {
+        transition: none;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-base text-ink antialiased">
+
+  <!--
+    ============================================================================
+    GANTI GAMBAR DI SINI
+    ----------------------------------------------------------------------------
+    Semua gambar diambil dari folder:  ./assets/images/
+    Timpa file di folder itu dengan gambar kamu memakai nama file yang SAMA
+    (tanpa perlu mengubah kode ini). Ukuran/rasio bebas; gambar otomatis di-crop
+    (object-cover). Rekomendasi rasio ada di bawah.
+
+      hero-camera.png ............ foto produk utama (potongan transparan hitam)
+      components-camera.png ...... gambar section Components (potongan transparan)
+      hero-ambient.jpg ........... latar belakang hero ............ (16:10)
+      bento-lens-mount.jpg ....... kartu bento: mount lensa ........ (1:1)
+      bento-finish.jpg ........... kartu bento: finishing tubuh ..... (3:2)
+      craft-top-plate.jpg ........ galeri Craft 1 ................. (4:5)
+      craft-advance-lever.jpg .... galeri Craft 2 ................. (4:5)
+      craft-viewfinder.jpg ....... galeri Craft 3 ................. (4:5)
+      film-tri-x.jpg ............. accordion Tri-X 400 ............ (3:4)
+      film-hp5.jpg ............... accordion HP5 Plus ............ (3:4)
+      film-portra.jpg ............ accordion Portra 400 .......... (3:4)
+      film-800t.jpg .............. accordion 800T ................ (3:4)
+      cta-ambient.jpg ............ latar belakang section CTA .... (16:9)
+      pill-shutter.jpg ........... pill teks: shutter ............ (9:4, lebar)
+      pill-film.jpg .............. pill teks: film ............... (9:4, lebar)
+      pill-darkroom.jpg .......... pill teks: darkroom ........... (9:4, lebar)
+
+    Format .jpg / .png / .webp / .svg sama-sama didukung. Kalau ganti ekstensi,
+    sesuaikan juga nama di atribut src pada kode.
+    ============================================================================
+  -->
+
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ==================== NAVIGATION : floating glass pill ==================== -->
+  <header class="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:pt-6">
+    <nav
+      class="glass flex w-full max-w-6xl items-center gap-4 rounded-full py-2.5 pl-5 pr-2.5 sm:gap-8 sm:pl-7"
+      aria-label="Primary"
+    >
+      <a
+        href="#top"
+        class="font-display text-[15px] font-extrabold uppercase tracking-[0.16em] text-ink"
+      >
+        Canon<span class="text-muted">&nbsp;/&nbsp;</span>AE-1
+      </a>
+
+      <div class="ml-auto hidden items-center gap-6 text-[13px] text-muted md:flex">
+        <a class="transition-colors hover:text-ink" href="#overview">Overview</a>
+        <a class="transition-colors hover:text-ink" href="#craft">Craft</a>
+        <a class="transition-colors hover:text-ink" href="#components">Components</a>
+        <a class="transition-colors hover:text-ink" href="#mechanics">Mechanics</a>
+        <a class="transition-colors hover:text-ink" href="#specs">Specs</a>
+      </div>
+
+      <a
+        href="#acquire"
+        class="ml-auto inline-flex items-center rounded-full bg-ink px-5 py-2.5 text-[12px] font-medium uppercase tracking-[0.14em] text-base transition-transform hover:scale-[1.03] md:ml-0"
+      >
+        Acquire
+      </a>
+    </nav>
+  </header>
+
+  <main id="top" class="relative z-10 w-full max-w-full overflow-x-clip">
+    <!-- ==================== ATTENTION : HERO (artistic asymmetry) ==================== -->
+    <section id="intro" class="relative overflow-hidden px-5 pb-28 pt-36 sm:px-8 md:pb-40 md:pt-48 lg:px-16">
+      <div class="pointer-events-none absolute inset-0 opacity-[0.22]" aria-hidden="true">
+        <img
+          src="./assets/images/hero-ambient.jpg"
+          alt=""
+          class="hero-ambient h-full w-full object-cover brightness-[1.05]"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="absolute inset-0 bg-gradient-to-r from-base via-base/55 to-base/10"></div>
+      </div>
+
+      <div class="relative mx-auto grid max-w-[1500px] grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
+        <div class="hero-copy lg:col-span-7 text-center lg:text-left">
+          <p class="hero-reveal mb-7 flex items-center gap-3 text-[11px] uppercase tracking-[0.34em] text-muted justify-center lg:justify-start">
+            35mm SLR
+            <span class="h-px w-10 bg-line"></span>
+            Introduced 1976
+          </p>
+
+          <div class="max-w-6xl">
+            <h1 id="ae1-hero-headline" class="font-display text-[clamp(2.8rem,5.8vw,5.5rem)] font-extrabold leading-[0.9] tracking-[-0.02em] text-ink">
+              <span class="hero-line"><span class="hero-word" style="--word-index:0">See the</span> <span class="hero-word hero-emphasis" style="--word-index:1">world</span></span>
+              <span class="hero-line"><span class="hero-word" style="--word-index:2">one</span> <span class="hero-word hero-emphasis" style="--word-index:3">frame</span> <span class="hero-word" style="--word-index:4">at a</span></span>
+              <span class="hero-line"><span class="hero-word hero-emphasis" style="--word-index:5">time.</span></span>
+            </h1>
+          </div>
+
+          <p class="hero-reveal mt-10 max-w-xl text-[15px] leading-relaxed text-muted sm:text-base text-center lg:text-left mx-auto lg:mx-0">
+            The Canon AE-1 put electronically controlled shutter-priority
+            automation into the hands of a generation. Silver and black,
+            breech-lock FD mount, cloth focal-plane shutter. An instrument
+            designed to disappear so the picture can appear.
+          </p>
+
+          <div class="hero-reveal mt-10 flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-start mx-auto lg:mx-0">
+            <a
+              href="#craft"
+              class="inline-flex items-center justify-center rounded-full bg-ink px-8 py-4 text-[13px] font-medium uppercase tracking-[0.16em] text-base transition-transform hover:scale-[1.03]"
+            >
+              Explore the AE-1
+            </a>
+            <a
+              href="#specs"
+              class="inline-flex items-center justify-center rounded-full border border-line px-8 py-4 text-[13px] font-medium uppercase tracking-[0.16em] text-ink transition-colors hover:border-amber hover:text-amber"
+            >
+              Read the specifications
+            </a>
+          </div>
+        </div>
+
+<div class="hero-media hero-reveal relative lg:col-span-5">
+            <img
+              src="./assets/images/hero-camera.png"
+              alt="Canon AE-1 analog film camera"
+              class="hero-obj mx-auto w-[clamp(70%,350px,85%)] rotate-[-4deg] hero-camera-float [filter:drop-shadow(0_40px_60px_rgba(0,0,0,0.6))] lg:-ml-16 lg:w-[118%] lg:max-w-none lg:rotate-[-4deg]"
+              fetchpriority="high"
+              draggable="false"
+            />
+          </div>
+      </div>
+
+      <div class="hero-scroll relative mx-auto mt-20 flex max-w-[1500px] items-center gap-4 text-[11px] uppercase tracking-[0.3em] text-muted lg:mt-28">
+        Scroll
+        <span class="h-px w-16 bg-line"></span>
+      </div>
+    </section>
+
+    <!-- ==================== INTEREST : GAPLESS BENTO ==================== -->
+    <section id="overview" class="px-5 py-32 sm:px-8 md:py-48 lg:px-16">
+      <div class="mx-auto max-w-[1500px]">
+        <div class="mb-14 flex flex-col gap-6 md:mb-20 md:flex-row md:items-end md:justify-between">
+          <h2
+            class="max-w-2xl font-display text-[clamp(2.4rem,5vw,4.6rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em]"
+          >
+            Built to last, measured by feel
+          </h2>
+          <p class="max-w-sm text-[15px] leading-relaxed text-muted">
+            Five decisions define the instrument. Every one of them is about the
+            photograph, not the camera.
+          </p>
+        </div>
+
+        <!-- 3x3 verified tiling: 4 + 2 + 1 + 1 + 1 = 9 cells, grid-flow-dense -->
+        <div class="grid auto-rows-[minmax(0,1fr)] grid-flow-dense grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
+          <!-- A : 2x2 -->
+          <article
+            class="group relative col-span-2 row-span-1 overflow-hidden rounded-3xl bg-surface hairline md:row-span-2"
+          >
+            <img
+              src="./assets/images/bento-lens-mount.jpg"
+              alt="Close detail of interchangeable optics"
+              class="media-img absolute inset-0 h-full w-full object-cover opacity-100 brightness-[1.08] transition-[filter] duration-700 group-hover:brightness-[1.18]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-base via-base/30 to-transparent"></div>
+            <div class="relative flex h-full min-h-[320px] flex-col justify-end p-7 md:min-h-[520px] md:p-9">
+              <p class="text-[11px] uppercase tracking-[0.3em] text-amber">FD Mount</p>
+              <h3 class="mt-3 max-w-md font-display text-3xl font-extrabold uppercase leading-none tracking-[-0.02em] md:text-5xl">
+                Interchangeable optics, locked by feel
+              </h3>
+              <p class="mt-4 max-w-md text-[14px] leading-relaxed text-muted">
+                Canon's breech-lock FD mount grips the full range of FD and New FD
+                lenses. A turn of the collar, a positive click, and the light is
+                yours.
+              </p>
+            </div>
+          </article>
+
+          <!-- B : 1x2 -->
+          <article
+            class="group relative col-span-2 row-span-1 flex flex-col justify-between overflow-hidden rounded-3xl bg-surface hairline p-7 md:col-span-1 md:row-span-2 md:p-9"
+          >
+            <div>
+              <p class="text-[11px] uppercase tracking-[0.3em] text-amber">Weight</p>
+              <p class="mt-4 font-display text-[clamp(3.5rem,9vw,6rem)] font-extrabold leading-none tracking-[-0.04em]">
+                590<span class="text-xl align-top tracking-normal text-muted">g</span>
+              </p>
+              <p class="mt-4 max-w-[22ch] text-[14px] leading-relaxed text-muted">
+                Body only. Light enough to carry all day, dense enough to feel
+                deliberate in the hand.
+              </p>
+            </div>
+            <div class="mt-8 aspect-[3/2] overflow-hidden rounded-2xl">
+              <img
+                src="./assets/images/bento-finish.jpg"
+                alt="Silver and black body finish"
+                class="media-img h-full w-full object-cover opacity-100 brightness-[1.08]"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </article>
+
+          <!-- C : 1x1 -->
+          <article
+            class="group flex min-h-[190px] flex-col justify-between rounded-3xl bg-surface hairline p-7"
+          >
+            <p class="text-[11px] uppercase tracking-[0.3em] text-amber">Shutter</p>
+            <div>
+              <p class="font-display text-3xl font-extrabold leading-none tracking-[-0.02em]">
+                1/1000s
+              </p>
+              <p class="mt-3 text-[13px] leading-relaxed text-muted">
+                Top speed, four-axis cloth focal plane, electronic timing.
+              </p>
+            </div>
+          </article>
+
+          <!-- D : 1x1 -->
+          <article
+            class="group flex min-h-[190px] flex-col justify-between rounded-3xl bg-surface hairline p-7"
+          >
+            <p class="text-[11px] uppercase tracking-[0.3em] text-amber">Exposure</p>
+            <div>
+              <p class="font-display text-3xl font-extrabold leading-none tracking-[-0.02em]">
+                AE
+              </p>
+              <p class="mt-3 text-[13px] leading-relaxed text-muted">
+                Shutter-priority automation, or full manual control, your call.
+              </p>
+            </div>
+          </article>
+
+          <!-- E : 1x1 (full width on mobile to keep the 2-col grid gapless) -->
+          <article
+            class="group relative col-span-2 min-h-[280px] md:min-h-[360px] rounded-[2rem] bg-surface hairline overflow-hidden md:col-span-1"
+          >
+            <!-- Double-bezel outer shell -->
+            <div class="absolute inset-0 p-[1.5px] bg-gradient-to-br from-white/10 to-transparent rounded-[2rem] pointer-events-none" aria-hidden="true"></div>
+            
+            <!-- Inner core with camera focal point -->
+            <div class="relative z-10 h-full flex flex-col items-start justify-between p-7 md:p-10">
+              <!-- Top-left: ORIGIN label -->
+              <div class="flex items-center gap-2">
+                <span class="h-px w-10 bg-amber/50"></span>
+                <p class="text-[10px] uppercase tracking-[0.35em] text-amber font-medium">Origin</p>
+              </div>
+              
+              <!-- Center/Right: Camera focal point -->
+              <div class="relative flex-1 flex items-end justify-end md:items-center md:justify-center min-h-[160px]">
+                <img
+                  src="./assets/foto%20produk/canon-ae-1.png"
+                  alt="Canon AE-1 origin"
+                  class="w-[65%] max-w-[280px] md:w-[80%] md:max-w-[360px] object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)] transform transition-transform duration-700 ease-out group-hover:scale-[1.02] group-hover:-rotate-1"
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                />
+                <!-- Subtle ground shadow -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-4 bg-gradient-to-t from-base via-base/30 to-transparent rounded-full blur-xl opacity-60" aria-hidden="true"></div>
+              </div>
+              
+              <!-- Bottom-left: 1976 hero typography -->
+              <div class="w-full max-w-[280px]">
+                <p class="font-display text-[clamp(3rem,8vw,5.5rem)] font-extrabold leading-none tracking-[-0.03em] text-ink">
+                  1976
+                </p>
+                <p class="mt-3 text-[14px] leading-relaxed text-muted max-w-xs">
+                  Built in Japan, changed what an amateur camera could be.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INLINE TYPOGRAPHY IMAGES ==================== -->
+    <section class="px-5 pb-32 pt-10 sm:px-8 md:pb-48 lg:px-16">
+      <div class="mx-auto max-w-[1500px]">
+        <p
+          class="font-display text-[clamp(2rem,4.6vw,4.4rem)] font-extrabold uppercase leading-[1.02] tracking-[-0.02em]"
+        >
+          It is
+          <span class="type-pill" style="background-image: url('./assets/images/pill-shutter.jpg')" aria-hidden="true"></span>
+          mechanical,
+          <span class="type-pill" style="background-image: url('./assets/images/pill-film.jpg')" aria-hidden="true"></span>
+          optical, and entirely
+          <span class="type-pill" style="background-image: url('./assets/images/pill-darkroom.jpg')" aria-hidden="true"></span>
+          present.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== DESIRE : PINNED SPLIT + SCROLL GALLERY ==================== -->
+    <section id="craft" class="relative px-5 pb-32 sm:px-8 md:pb-48 lg:px-16">
+      <div class="mx-auto grid max-w-[1500px] grid-cols-1 gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-24">
+        <div class="lg:relative">
+          <div class="split-pin">
+            <p class="text-[11px] uppercase tracking-[0.34em] text-muted">The craft</p>
+            <h2
+              class="mt-6 max-w-md font-display text-[clamp(2.4rem,5vw,4.6rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em]"
+            >
+              Every surface earns its place
+            </h2>
+            <p class="mt-6 max-w-sm text-[15px] leading-relaxed text-muted">
+              The AE-1 was not decorated. It was resolved. Keep scrolling and the
+              details hold their position while the work moves past them.
+            </p>
+
+            <div class="mt-10 flex flex-col gap-4 border-t border-line pt-8 text-[13px] text-muted">
+              <span>Breech-lock FD mount</span>
+              <span>Horizontal cloth focal plane</span>
+              <span>Shutter-priority AE metering</span>
+              <span>Single-stroke advance, 120 degrees</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery flex flex-col gap-16 md:gap-24">
+          <figure class="group overflow-hidden rounded-3xl">
+            <img
+              src="./assets/images/craft-top-plate.jpg"
+              alt="Detail of the top plate and control dial"
+              class="media-img aspect-[4/5] w-full object-cover opacity-100 transition-[filter,transform] duration-700 group-hover:brightness-110"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="mt-4 text-[11px] uppercase tracking-[0.28em] text-muted">
+              Top plate and shutter-speed dial
+            </figcaption>
+          </figure>
+
+          <figure class="group overflow-hidden rounded-3xl">
+            <img
+              src="./assets/images/craft-advance-lever.jpg"
+              alt="Detail of the film advance lever"
+              class="media-img aspect-[4/5] w-full object-cover opacity-100 transition-[filter,transform] duration-700 group-hover:brightness-110"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="mt-4 text-[11px] uppercase tracking-[0.28em] text-muted">
+              Single-stroke film advance
+            </figcaption>
+          </figure>
+
+          <figure class="group overflow-hidden rounded-3xl">
+            <img
+              src="./assets/images/craft-viewfinder.jpg"
+              alt="Detail of the viewfinder eyepiece"
+              class="media-img aspect-[4/5] w-full object-cover opacity-100 transition-[filter,transform] duration-700 group-hover:brightness-110"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="mt-4 text-[11px] uppercase tracking-[0.28em] text-muted">
+              Pentaprism viewfinder
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COMPONENTS / EXPLODED VIEW ==================== -->
+    <section id="components" class="px-5 py-32 sm:px-8 md:py-48 lg:px-16">
+      <div class="mx-auto max-w-[1500px]">
+        <div class="mx-auto max-w-3xl text-center">
+          <p class="text-[11px] uppercase tracking-[0.34em] text-muted">Inside the body</p>
+          <h2
+            class="mt-6 font-display text-[clamp(2.4rem,5vw,4.6rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em]"
+          >
+            Every part, in its place
+          </h2>
+          <p class="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-muted">
+            The AE-1 holds its mechanism with intention: optics at the front,
+            shutter at the heart, electronics timed to the millisecond. Taken
+            apart, it still reads as one idea.
+          </p>
+        </div>
+
+        <div class="mt-16 grid grid-cols-1 gap-10 md:mt-20 lg:grid-cols-12 lg:gap-8">
+          <!-- Technical stage -->
+          <div class="lg:col-span-7">
+            <div class="split-pin">
+            <div class="group relative overflow-hidden rounded-[2rem] bg-surface hairline">
+              <div class="dotgrid pointer-events-none absolute inset-0 opacity-70" aria-hidden="true"></div>
+              <div
+                class="pointer-events-none absolute inset-0"
+                aria-hidden="true"
+                style="background: radial-gradient(30rem 24rem at 50% 46%, rgba(201, 168, 118, 0.18), transparent 70%)"
+              ></div>
+
+              <span class="pointer-events-none absolute left-5 top-5 h-4 w-4 border-l border-t border-line" aria-hidden="true"></span>
+              <span class="pointer-events-none absolute right-5 top-5 h-4 w-4 border-r border-t border-line" aria-hidden="true"></span>
+              <span class="pointer-events-none absolute bottom-5 left-5 h-4 w-4 border-b border-l border-line" aria-hidden="true"></span>
+              <span class="pointer-events-none absolute bottom-5 right-5 h-4 w-4 border-b border-r border-line" aria-hidden="true"></span>
+
+              <div
+                class="absolute left-1/2 top-6 flex -translate-x-1/2 items-center gap-2 rounded-full border border-line bg-base/60 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] text-muted backdrop-blur"
+              >
+                <span class="relative flex h-1.5 w-1.5">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber opacity-70"></span>
+                  <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber"></span>
+                </span>
+                <span id="viewerStateWord">Assembled view</span>
+                <span class="text-line">/</span>
+                <span class="text-ink">08</span> parts
+              </div>
+
+              <div class="relative flex min-h-[360px] items-center justify-center px-6 py-16 md:min-h-[500px] md:px-10 md:py-20">
+                <div class="ring-dashed ring-spin pointer-events-none absolute h-[250px] w-[250px] rounded-full md:h-[330px] md:w-[330px]" aria-hidden="true"></div>
+
+                <div id="viewer3d" class="relative z-10 h-[300px] w-full max-w-[560px] md:h-[420px]" data-state="assembled">
+                  <div class="float-slow pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <img
+                      id="viewerFallback"
+                      src="./assets/images/components-camera.png"
+                      alt="Exploded Canon AE-1: body, FD lens mount, cloth focal-plane shutter, pentaprism viewfinder and internal modules laid out in order"
+                      class="media-img w-[200px] max-w-full object-contain [filter:drop-shadow(0_30px_44px_rgba(0,0,0,0.6))] md:w-[260px]"
+                      loading="lazy"
+                      decoding="async"
+                      draggable="false"
+                    />
+                  </div>
+                  <div id="viewerStage" class="absolute inset-0" aria-hidden="true"></div>
+
+                  <div id="viewerLabel" class="viewer-label hidden" aria-hidden="true"></div>
+
+                  <div id="viewerUI" class="hidden absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2.5">
+                    <div class="flex items-center gap-2">
+                      <button
+                        id="viewerToggle"
+                        type="button"
+                        aria-pressed="false"
+                        class="rounded-full border border-line bg-base/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted backdrop-blur transition-colors hover:border-amber hover:text-amber focus-visible:border-amber focus-visible:text-amber"
+                      >
+                        Explode
+                      </button>
+                      <button
+                        id="viewerReset"
+                        type="button"
+                        class="rounded-full border border-line bg-base/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted backdrop-blur transition-colors hover:border-amber hover:text-amber focus-visible:border-amber focus-visible:text-amber"
+                      >
+                        Reset view
+                      </button>
+                    </div>
+                    <p class="font-mono text-[9px] uppercase tracking-[0.24em] text-muted/70">
+                      Drag to rotate &middot; Hover to identify
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative grid grid-cols-3 divide-x divide-line border-t border-line">
+                <div class="px-5 py-4">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Body</p>
+                  <p class="mt-1 font-display text-lg font-extrabold">590<span class="text-xs text-muted">g</span></p>
+                </div>
+                <div class="px-5 py-4">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Finder</p>
+                  <p class="mt-1 font-display text-lg font-extrabold">0.86<span class="text-xs text-muted">x</span></p>
+                </div>
+                <div class="px-5 py-4">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Meter</p>
+                  <p class="mt-1 font-display text-lg font-extrabold">EV 1<span class="text-xs text-muted">–18</span></p>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+          <!-- Component index -->
+          <div class="lg:col-span-5">
+            <div class="flex items-baseline justify-between border-b border-line pb-4">
+              <h3 class="font-display text-sm font-extrabold uppercase tracking-[0.22em]">The line-up</h3>
+              <span id="lineupCounter" class="font-mono text-[11px] text-amber">01 <span class="text-muted">/ 08</span></span>
+            </div>
+
+            <div class="lineup-stack mt-6" data-lineup>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="lens_assembly" style="--i: 0">
+                <span class="comp-index font-mono text-[11px] text-muted">01 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  FD 50mm lens assembly
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  Six elements in four groups, carried on the barrel up front. The
+                  optics and the focus and aperture rings travel as one unit.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="lens_mount" style="--i: 1">
+                <span class="comp-index font-mono text-[11px] text-muted">02 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Breech-lock FD mount
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  A turning collar locks the lens without rotating the optics. Positive,
+                  repeatable, wear-free at the mating surfaces.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="main_body" style="--i: 2">
+                <span class="comp-index font-mono text-[11px] text-muted">03 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Main body &amp; chassis
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  The die-cast shell that carries the mirror box, film chamber and the
+                  focal-plane shutter at its heart.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="viewfinder_housing" style="--i: 3">
+                <span class="comp-index font-mono text-[11px] text-muted">04 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Pentaprism viewfinder
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  A fixed eye-level finder at 0.86x, with split-image focusing at its
+                  center.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="upper_housing" style="--i: 4">
+                <span class="comp-index font-mono text-[11px] text-muted">05 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Upper housing &amp; top plate
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  The deck that seats the shutter-speed dial and counter, and forms the
+                  slope the prism rises from.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="rear_cover" style="--i: 5">
+                <span class="comp-index font-mono text-[11px] text-muted">06 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Rear cover
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  The hinged back with its pressure plate and memo holder, sealing the
+                  film chamber against light.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="rewind_knob" style="--i: 6">
+                <span class="comp-index font-mono text-[11px] text-muted">07 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Film rewind knob
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  Folds flat to the top plate, lifts to release the spool, and winds the
+                  exposed roll back in one motion.
+                </p>
+              </article>
+              <article class="lineup-card comp-item group/item" data-lineup-card data-comp="advance_lever" style="--i: 7">
+                <span class="comp-index font-mono text-[11px] text-muted">08 <span class="opacity-50">/ 08</span></span>
+                <h4 class="mt-3 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.02em]">
+                  Film advance lever
+                </h4>
+                <p class="mt-2 text-[13px] leading-relaxed text-muted">
+                  One 120-degree throw of the lever cocks the shutter and advances the
+                  frame, readying the next exposure.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SCRUBBED TEXT REVEAL ==================== -->
+    <section id="mechanics" class="px-5 py-32 sm:px-8 md:py-48 lg:px-16">
+      <div class="mx-auto max-w-[1100px]">
+        <p class="mb-10 text-[11px] uppercase tracking-[0.34em] text-muted">The mechanics</p>
+        <p class="scrub-text font-display text-[clamp(1.6rem,3.6vw,3.2rem)] font-medium leading-[1.25] tracking-[-0.01em]">
+          The AE-1 relies on electronics rather than pure mechanics, a four-axis
+          horizontal cloth shutter timed by current, not springs. Shutter speeds
+          from two seconds to a thousandth, X-sync at a sixtieth. Precision you
+          can hear.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== HORIZONTAL ACCORDIONS ==================== -->
+    <section class="px-5 pb-32 sm:px-8 md:pb-48 lg:px-16">
+      <div class="mx-auto max-w-[1500px]">
+        <h2
+          class="mb-12 max-w-3xl font-display text-[clamp(2.4rem,5vw,4.6rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] md:mb-16"
+        >
+          Load it, and let it think
+        </h2>
+
+        <div class="film-rack flex h-auto flex-col gap-3 md:h-[560px] md:flex-row">
+          <button
+            type="button"
+            class="group relative flex-1 overflow-hidden rounded-3xl text-left transition-[flex] duration-700 ease-out md:hover:flex-[2.4] md:focus-visible:flex-[2.4]"
+          >
+            <img
+              src="./assets/images/film-tri-x.jpg"
+              alt="Monochrome high-contrast film frame"
+              class="media-img absolute inset-0 h-full w-full object-cover opacity-100 brightness-[1.08]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-base/90 via-base/20 to-transparent"></div>
+            <div class="relative flex h-full min-h-[240px] flex-col justify-end p-6 md:min-h-0">
+              <span class="whitespace-nowrap font-display text-xl font-extrabold uppercase tracking-[0.02em] md:[writing-mode:vertical-rl]">
+                Tri-X 400
+              </span>
+              <span class="mt-2 hidden text-[12px] leading-relaxed text-muted md:block md:[writing-mode:vertical-rl]">
+                Grain that reads as light
+              </span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="group relative flex-1 overflow-hidden rounded-3xl text-left transition-[flex] duration-700 ease-out md:hover:flex-[2.4] md:focus-visible:flex-[2.4]"
+          >
+            <img
+              src="./assets/images/film-hp5.jpg"
+              alt="Moody monochrome scene"
+              class="media-img absolute inset-0 h-full w-full object-cover opacity-100 brightness-[1.08]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-base/90 via-base/20 to-transparent"></div>
+            <div class="relative flex h-full min-h-[240px] flex-col justify-end p-6 md:min-h-0">
+              <span class="whitespace-nowrap font-display text-xl font-extrabold uppercase tracking-[0.02em] md:[writing-mode:vertical-rl]">
+                HP5 Plus
+              </span>
+              <span class="mt-2 hidden text-[12px] leading-relaxed text-muted md:block md:[writing-mode:vertical-rl]">
+                Forgiving, alive, timeless
+              </span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="group relative flex-1 overflow-hidden rounded-3xl text-left transition-[flex] duration-700 ease-out md:hover:flex-[2.4] md:focus-visible:flex-[2.4]"
+          >
+            <img
+              src="./assets/images/film-portra.jpg"
+              alt="Warm-toned portrait scene"
+              class="media-img absolute inset-0 h-full w-full object-cover opacity-100 brightness-[1.08]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-base/90 via-base/20 to-transparent"></div>
+            <div class="relative flex h-full min-h-[240px] flex-col justify-end p-6 md:min-h-0">
+              <span class="whitespace-nowrap font-display text-xl font-extrabold uppercase tracking-[0.02em] md:[writing-mode:vertical-rl]">
+                Portra 400
+              </span>
+              <span class="mt-2 hidden text-[12px] leading-relaxed text-muted md:block md:[writing-mode:vertical-rl]">
+                Skin handled like light
+              </span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="group relative flex-1 overflow-hidden rounded-3xl text-left transition-[flex] duration-700 ease-out md:hover:flex-[2.4] md:focus-visible:flex-[2.4]"
+          >
+            <img
+              src="./assets/images/film-800t.jpg"
+              alt="Night scene lit in cool tungsten"
+              class="media-img absolute inset-0 h-full w-full object-cover opacity-100 brightness-[1.08]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-base/90 via-base/20 to-transparent"></div>
+            <div class="relative flex h-full min-h-[240px] flex-col justify-end p-6 md:min-h-0">
+              <span class="whitespace-nowrap font-display text-xl font-extrabold uppercase tracking-[0.02em] md:[writing-mode:vertical-rl]">
+                800T
+              </span>
+              <span class="mt-2 hidden text-[12px] leading-relaxed text-muted md:block md:[writing-mode:vertical-rl]">
+                Tungsten, after dark
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INFINITE MARQUEE ==================== -->
+    <section class="overflow-hidden border-y border-line py-10 md:py-14" aria-hidden="true">
+      <div class="marquee">
+        <div class="marquee-group font-display text-[clamp(1.6rem,4vw,3.4rem)] font-extrabold uppercase tracking-[-0.01em] text-ink/90">
+          <span>Canon AE-1</span>
+          <span class="text-amber">/</span>
+          <span>35MM</span>
+          <span class="text-amber">/</span>
+          <span>FD Mount</span>
+          <span class="text-amber">/</span>
+          <span>1976</span>
+          <span class="text-amber">/</span>
+          <span>Shutter Priority</span>
+          <span class="text-amber">/</span>
+          <span>Analog</span>
+          <span class="text-amber">/</span>
+        </div>
+        <div class="marquee-group font-display text-[clamp(1.6rem,4vw,3.4rem)] font-extrabold uppercase tracking-[-0.01em] text-ink/90">
+          <span>Canon AE-1</span>
+          <span class="text-amber">/</span>
+          <span>35MM</span>
+          <span class="text-amber">/</span>
+          <span>FD Mount</span>
+          <span class="text-amber">/</span>
+          <span>1976</span>
+          <span class="text-amber">/</span>
+          <span>Shutter Priority</span>
+          <span class="text-amber">/</span>
+          <span>Analog</span>
+          <span class="text-amber">/</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SPECIFICATIONS ==================== -->
+    <section id="specs" class="px-5 py-32 sm:px-8 md:py-48 lg:px-16">
+      <div class="mx-auto max-w-[1500px]">
+        <div class="mb-14 flex flex-col gap-6 md:mb-20 md:flex-row md:items-end md:justify-between">
+          <h2
+            class="max-w-2xl font-display text-[clamp(2.4rem,5vw,4.6rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em]"
+          >
+            Recorded, not embellished
+          </h2>
+          <button
+            id="copySpecs"
+            type="button"
+            class="self-start rounded-full border border-line px-6 py-3 text-[12px] uppercase tracking-[0.16em] text-ink transition-colors hover:border-amber hover:text-amber"
+            aria-label="Copy all specifications to clipboard"
+          >
+            Copy specifications
+          </button>
+        </div>
+
+        <div id="specData" class="grid grid-cols-1 gap-x-16 gap-y-0 md:grid-cols-2">
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Film format</span>
+            <p class="mt-2 text-[15px]">35 mm (135)</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Picture size</span>
+            <p class="mt-2 text-[15px]">24 x 36 mm</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Lens mount</span>
+            <p class="mt-2 text-[15px]">Canon FD (breech-lock)</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Shutter</span>
+            <p class="mt-2 text-[15px]">Four-axis horizontal-travel cloth focal plane</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Shutter speeds</span>
+            <p class="mt-2 text-[15px]">2 s to 1/1000 s plus Bulb</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Flash X-sync</span>
+            <p class="mt-2 text-[15px]">1/60 s</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Exposure</span>
+            <p class="mt-2 text-[15px]">Shutter-priority AE, manual</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Metering</span>
+            <p class="mt-2 text-[15px]">TTL center-weighted, EV 1-18 at ISO 100</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Film speed</span>
+            <p class="mt-2 text-[15px]">ISO 25 to 3200</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Viewfinder</span>
+            <p class="mt-2 text-[15px]">Fixed eye-level pentaprism, 0.86x</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Dimensions</span>
+            <p class="mt-2 text-[15px]">141 x 87 x 47.5 mm</p>
+          </div>
+          <div class="border-t border-line py-5 md:py-6">
+            <span class="text-[11px] uppercase tracking-[0.24em] text-muted">Weight</span>
+            <p class="mt-2 text-[15px]">590 g (body only)</p>
+          </div>
+        </div>
+
+        <p class="mt-10 max-w-xl text-[12px] leading-relaxed text-muted">
+          Specifications verified against the Canon Camera Museum archive.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== ACTION : MASSIVE CTA ==================== -->
+    <section id="acquire" class="px-5 pb-28 pt-16 sm:px-8 md:pb-40 lg:px-16">
+      <div
+        class="relative mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-surface hairline px-6 py-24 text-center md:px-16 md:py-40"
+      >
+        <div class="pointer-events-none absolute inset-0 opacity-[0.2]" aria-hidden="true">
+          <img
+            src="./assets/images/cta-ambient.jpg"
+            alt=""
+            class="h-full w-full object-cover brightness-[1.05]"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="relative">
+          <h2
+            class="mx-auto max-w-4xl font-display text-[clamp(2.8rem,8vw,7rem)] font-extrabold uppercase leading-[0.9] tracking-[-0.03em]"
+          >
+            Keep the frame
+          </h2>
+          <p class="mx-auto mt-8 max-w-xl text-[15px] leading-relaxed text-muted">
+            The AE-1 is a 35 mm film camera. It asks for a roll, a little patience,
+            and your attention in return.
+          </p>
+          <div class="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a
+              id="purchaseCta"
+              href="#"
+              aria-disabled="true"
+              class="inline-flex items-center justify-center rounded-full bg-ink px-10 py-5 text-[13px] font-medium uppercase tracking-[0.18em] text-base transition-transform hover:scale-[1.03] aria-disabled:cursor-not-allowed aria-disabled:bg-surface aria-disabled:text-muted aria-disabled:ring-1 aria-disabled:ring-line aria-disabled:hover:scale-100"
+            >
+              Acquire the AE-1
+            </a>
+            <a
+              href="#overview"
+              class="inline-flex items-center justify-center rounded-full border border-line px-10 py-5 text-[13px] font-medium uppercase tracking-[0.18em] text-ink transition-colors hover:border-amber hover:text-amber"
+            >
+              Back to overview
+            </a>
+          </div>
+          <p id="purchaseNote" class="mt-6 text-[12px] uppercase tracking-[0.2em] text-muted">
+            Purchase link not yet configured
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-line px-5 py-14 sm:px-8 lg:px-16">
+    <div class="mx-auto flex max-w-[1500px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
+      <div>
+        <p class="font-display text-[16px] font-extrabold uppercase tracking-[0.16em]">Canon AE-1</p>
+        <p class="mt-2 text-[12px] uppercase tracking-[0.18em] text-muted">
+          Camera Experience, prototype
+        </p>
+      </div>
+
+      <nav class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[12px] uppercase tracking-[0.16em] text-muted" aria-label="Footer">
+        <a class="transition-colors hover:text-ink" href="#top">Back to top</a>
+        <a class="transition-colors hover:text-ink" href="#craft">Craft</a>
+        <a class="transition-colors hover:text-ink" href="#mechanics">Mechanics</a>
+        <a class="transition-colors hover:text-ink" href="#specs">Specs</a>
+      </nav>
+
+      <p class="text-[12px] uppercase tracking-[0.16em] text-muted">
+        Copyright <span id="year">2026</span> Canon Camera Experience
+      </p>
+    </div>
+  </footer>
+
+<script>
+    // Runtime marker: added at parse time so the CSS pre-paint hides can apply
+    // before first paint (no flash). It is removed when motion is not allowed
+    // or GSAP fails to load, keeping the page fully visible as a fallback.
+    document.documentElement.classList.add("js");
+
+    // Global reduced-motion flag for use throughout the script.
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Wait for GSAP (deferred scripts) to be available, then run animations.
+    // This avoids the race where DOMContentLoaded fires before deferred GSAP loads.
+    function runWhenGSAPReady(cb) {
+      if (reduceMotion) {
+        document.documentElement.classList.remove("js");
+        return;
+      }
+      let attempts = 0;
+      const maxAttempts = 60;
+      const check = () => {
+        if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+          cb();
+        } else if (attempts++ < maxAttempts) {
+          setTimeout(check, 50);
+        } else {
+          document.documentElement.classList.remove("js");
+        }
+      };
+      check();
+    }
+
+    runWhenGSAPReady(() => {
+
+      // ---------- Scroll driver ----------
+      // One place that owns window scrolling. CSS `scroll-behavior: smooth`
+      // was removed because it makes ScrollTrigger's internal
+      // scroll-measure-during-refresh land on the wrong position (every
+      // trigger's `start` drifts by the current scroll). This helper keeps a
+      // single GSAP tween (or a native jump under reduced motion / no GSAP),
+      // and forcibly sets scroll-behavior to "auto" while it runs so a refresh
+      // can never be corrupted mid-flight.
+      const scroller = {
+        tween: null,
+        run(target, { smooth = true, onDone = null } = {}) {
+          this.cancel();
+          const html = document.documentElement;
+          const restore = html.style.scrollBehavior;
+          html.style.scrollBehavior = "auto";
+          const done = () => {
+            html.style.scrollBehavior = restore;
+            this.tween = null;
+            if (onDone) onDone();
+          };
+          if (!smooth || reduceMotion || typeof gsap === "undefined") {
+            window.scrollTo(0, target);
+            done();
+            return;
+          }
+          const proxy = { y: window.scrollY };
+          this.tween = gsap.to(proxy, {
+            y: target,
+            duration: 0.65,
+            ease: "power2.inOut",
+            overwrite: true,
+            onUpdate: () => window.scrollTo(0, proxy.y),
+            onComplete: done,
+          });
+        },
+        cancel() {
+          if (this.tween) {
+            this.tween.kill();
+            this.tween = null;
+          }
+        },
+      };
+
+      // Same-page anchor links keep their smooth glide through the scroller.
+      document.addEventListener("click", (event) => {
+        if (event.defaultPrevented) return;
+        if (event.button != null && event.button !== 0) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const anchor = event.target.closest('a[href^="#"]');
+        if (!anchor) return;
+        const href = anchor.getAttribute("href");
+        if (href === "#" || href.length < 2) return;
+        const section = href === "#top" ? document.body : document.querySelector(href);
+        if (!section) return;
+        event.preventDefault();
+        const targetY = href === "#top" ? 0 : section.getBoundingClientRect().top + window.scrollY;
+        scroller.run(targetY, { smooth: !reduceMotion && typeof gsap !== "undefined" });
+      });
+
+      // ---------- Copy specifications ----------
+      const copyButton = document.getElementById("copySpecs");
+      const specData = document.getElementById("specData");
+      if (copyButton && specData) {
+        copyButton.addEventListener("click", async () => {
+          const original = copyButton.textContent;
+          const rows = [...specData.children].map((row) => {
+            const label = row.querySelector("span").textContent.trim();
+            const value = row.querySelector("p").textContent.trim();
+            return label + ": " + value;
+          });
+          const text = "Canon AE-1 — Specifications\n\n" + rows.join("\n");
+          try {
+            await navigator.clipboard.writeText(text);
+            copyButton.textContent = "Copied";
+          } catch (error) {
+            copyButton.textContent = "Copy unavailable";
+          }
+          window.setTimeout(() => {
+            copyButton.textContent = original;
+          }, 1800);
+        });
+      }
+
+      // ---------- Purchase CTA guard ----------
+      const PURCHASE_URL = "";
+      const purchaseCta = document.getElementById("purchaseCta");
+      const purchaseNote = document.getElementById("purchaseNote");
+      if (purchaseCta) {
+        if (PURCHASE_URL) {
+          purchaseCta.href = PURCHASE_URL;
+          purchaseCta.target = "_blank";
+          purchaseCta.rel = "noopener noreferrer";
+          purchaseCta.removeAttribute("aria-disabled");
+          if (purchaseNote) purchaseNote.remove();
+        } else {
+          purchaseCta.setAttribute("aria-disabled", "true");
+          purchaseCta.addEventListener("click", (event) => {
+            if (purchaseCta.getAttribute("aria-disabled") === "true") {
+              event.preventDefault();
+            }
+          });
+        }
+      }
+
+      // ---------- Footer year ----------
+      const yearNode = document.getElementById("year");
+      if (yearNode) yearNode.textContent = String(new Date().getFullYear());
+
+      // ---------- The line-up controller (shared by cards + 3D) ----------
+      // Single source of truth for the active component. Scrolling the sticky
+      // deck, clicking a card, and clicking a 3D part all funnel through
+      // select()/setCurrent(), so the gold card accent and the 3D highlight can
+      // never disagree. Lives outside the GSAP guard so the 3D↔card link keeps
+      // working (with instant scroll) under reduced motion.
+      const lineup = document.querySelector("[data-lineup]");
+      if (lineup) {
+        const cards = Array.from(lineup.querySelectorAll("[data-lineup-card]"));
+        const counter = document.getElementById("lineupCounter");
+        const span = Math.max(cards.length - 1, 0);
+        const pad = (n) => String(n + 1).padStart(2, "0");
+        const total = String(cards.length).padStart(2, "0");
+        const canScroll =
+          typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined" && !reduceMotion;
+
+        let current = -1;
+        let suppress = false; // mute card->3D reports while we drive the scroll
+        let trigger = null;
+
+        const fire = (index) => {
+          const card = cards[index];
+          window.dispatchEvent(
+            new CustomEvent("ae1:active-change", {
+              detail: { index, key: card ? card.dataset.comp : null },
+            })
+          );
+        };
+
+        const setCurrent = (value) => {
+          const index = Math.max(0, Math.min(span, value));
+          if (index === current) return;
+          current = index;
+          cards.forEach((card, k) => card.classList.toggle("is-current", k === index));
+          if (counter) {
+            counter.innerHTML = pad(index) + ' <span class="text-muted">/ ' + total + "</span>";
+          }
+          if (!suppress) fire(index);
+        };
+
+        // Depth: card i starts receding once the deck reaches past it.
+        const applyDepth = (progress) => {
+          const p = progress * span;
+          cards.forEach((card, i) => {
+            const d = Math.max(0, Math.min(1, p - i));
+            card.style.transform =
+              "translateY(" + (-6 * d).toFixed(2) + "px) scale(" + (1 - 0.05 * d).toFixed(4) + ")";
+            card.style.opacity = (1 - 0.45 * d).toFixed(3);
+          });
+        };
+
+        // Average scroll distance between one card parking and the next. Heights
+        // are stable under sticky (unlike offsetTop), so this survives refresh.
+        const stride = () => {
+          if (cards.length < 2) return 200;
+          const gap = parseFloat(getComputedStyle(cards[0]).marginBottom) || 0;
+          let sum = 0;
+          for (let i = 0; i < cards.length - 1; i += 1) sum += cards[i].offsetHeight + gap;
+          return sum / span;
+        };
+
+        if (canScroll) {
+          gsap.registerPlugin(ScrollTrigger);
+          trigger = ScrollTrigger.create({
+            trigger: lineup,
+            start: () => "top " + (parseFloat(getComputedStyle(cards[0]).top) || 0) + "px",
+            end: () => "+=" + stride() * span,
+            onUpdate: (self) => {
+              applyDepth(self.progress);
+              setCurrent(Math.round(self.progress * span));
+            },
+            onRefresh: (self) => {
+              applyDepth(self.progress);
+              setCurrent(Math.round(self.progress * span));
+            },
+          });
+        }
+
+        // Scroll so card `index` sits at the front of the deck. Because this
+        // moves the real scroll position, the ScrollTrigger above stays the
+        // single driver and cards + 3D can't desync. The target is derived from
+        // the deck's live position (not ScrollTrigger.start, which can lag a
+        // layout change), so re-parking is exact.
+        const scrollToIndex = (index) => {
+          suppress = true;
+          fire(index); // highlight the target at once, before the scroll settles
+
+          const stickyTop = parseFloat(getComputedStyle(cards[0]).top) || 0;
+          const deckTop = lineup.getBoundingClientRect().top + window.scrollY;
+          const target = deckTop - stickyTop + stride() * index;
+
+          scroller.run(target, {
+            smooth: canScroll,
+            onDone: () => {
+              suppress = false;
+              setCurrent(index);
+              fire(index);
+            },
+          });
+        };
+
+        const select = (index) => scrollToIndex(Math.max(0, Math.min(span, Math.round(index))));
+
+        // A manual scroll interrupts a programmatic one so the two never fight.
+        const cancelScroll = () => {
+          scroller.cancel();
+          suppress = false;
+        };
+        window.addEventListener("wheel", cancelScroll, { passive: true });
+        window.addEventListener("touchmove", cancelScroll, { passive: true });
+        window.addEventListener("keydown", (e) => {
+          if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].indexOf(e.key) !== -1) {
+            cancelScroll();
+          }
+        });
+
+        cards.forEach((card, i) => card.addEventListener("click", () => select(i)));
+
+        // Selection coming the other way, from the 3D model.
+        window.addEventListener("ae1:select-component", (e) => {
+          if (e.detail && typeof e.detail.index === "number") select(e.detail.index);
+        });
+
+        // Exposed so the 3D viewer can drive and read the same index.
+        window.__ae1Lineup = { select, getActive: () => current, cards, scrollTrigger: trigger };
+
+        setCurrent(0);
+        window.dispatchEvent(new Event("ae1:lineup-ready"));
+      }
+
+      // ---------- GSAP motion ----------
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Scrubbing text reveal: words rise from 0.1 to 1 opacity with scroll
+      const scrub = document.querySelector(".scrub-text");
+      if (scrub) {
+        const words = scrub.textContent.trim().split(/\s+/);
+        scrub.innerHTML = words
+          .map((word) => "<span class='scrub-word inline-block opacity-[0.12]'>" + word + "</span>")
+          .join(" ");
+        gsap.to(".scrub-word", {
+          opacity: 1,
+          ease: "none",
+          stagger: 0.08,
+          scrollTrigger: {
+            trigger: scrub,
+            start: "top 78%",
+            end: "top 28%",
+            scrub: true,
+          },
+        });
+      }
+
+      // Image scale + fade: grow on approach, darken as it scrolls out
+      document.querySelectorAll(".media-img").forEach((img) => {
+        const baseOpacity = parseFloat(window.getComputedStyle(img).opacity) || 1;
+
+        gsap.fromTo(
+          img,
+          { "--s": 0.92 },
+          {
+            "--s": 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: img,
+              start: "top 92%",
+              end: "top 55%",
+              scrub: true,
+            },
+          }
+        );
+
+        ScrollTrigger.create({
+          trigger: img,
+          start: "bottom top",
+          onEnter: () => gsap.to(img, { opacity: 0.55, duration: 0.4 }),
+          onLeaveBack: () => gsap.to(img, { opacity: baseOpacity, duration: 0.4 }),
+        });
+      });
+
+      // The left column is held with CSS position: sticky (see .split-pin),
+      // so no ScrollTrigger pin is needed here. The line-up deck itself is
+      // driven by the controller above.
+
+// ---------- Hero: entrance (once at load) ----------
+       // The headline words animate via CSS (no-JS fallback), GSAP enhances other elements.
+       const heroSection = document.getElementById("intro");
+       if (heroSection) {
+         const otherTitleWords = heroSection.querySelectorAll(".hero-word:not(#ae1-hero-headline .hero-word)");
+         const revealItems = heroSection.querySelectorAll(".hero-reveal");
+         // The inline end-state (opacity:1, transform:none) must persist so the
+         // .js pre-paint hide rule (`.js .hero-reveal { opacity: 0 }`) stays
+         // overridden once the intro finishes. No clearProps here.
+         gsap.timeline({ defaults: { ease: "power2.out" } })
+           .fromTo(otherTitleWords, { yPercent: 112, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.06 }, 0.15)
+           .fromTo(
+             revealItems,
+             { y: 26, opacity: 0 },
+             { y: 0, opacity: 1, duration: 0.7, stagger: 0.07 },
+             0.15
+           );
+
+        // ---------- Hero: scroll handoff ----------
+        // Differential planes as the hero leaves: the text column climbs and
+        // thins, the product sinks and recedes, the ambient sits almost still.
+        // Reverse-scrolling puts the camera back together on screen. Values are
+        // tuned down on small screens so the effect never fights touch scroll.
+        const bigScreen = window.matchMedia("(min-width: 1024px)").matches;
+        const hand = bigScreen ? 1 : 0.55;
+        const heroMediaImg = heroSection.querySelector(".hero-media img");
+        const heroAmbient = heroSection.querySelector(".hero-ambient");
+        gsap.timeline({
+          scrollTrigger: { trigger: heroSection, start: "top top", end: "bottom top", scrub: true },
+        })
+          .to(heroSection.querySelector(".hero-copy"), { yPercent: -16 * hand, opacity: 0, ease: "none" }, 0)
+          .to(heroMediaImg, { yPercent: 11 * hand, scale: 0.96, opacity: 0.35, ease: "none" }, 0)
+          .to(heroAmbient, { yPercent: 7 * hand, ease: "none" }, 0)
+          .to(heroSection.querySelector(".hero-scroll"), { opacity: 0, ease: "none" }, 0);
+      }
+
+      // ---------- Overview bento: shutter wipe + tiered rise ----------
+      const bentoGrid = document.querySelector("#overview .grid");
+      if (bentoGrid) {
+        const cells = Array.from(bentoGrid.children).filter((el) => el.matches("article"));
+        if (cells.length) {
+          gsap.fromTo(cells[0],
+            { clipPath: "inset(0 0 100% 0)", opacity: 0.85 },
+            {
+              clipPath: "inset(0 0 0% 0)",
+              opacity: 1,
+              duration: 1.1,
+              ease: "power3.out",
+              scrollTrigger: { trigger: bentoGrid, start: "top 86%", once: true },
+            });
+          if (cells.length > 1) {
+            gsap.from(cells.slice(1), {
+              y: 30,
+              opacity: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              stagger: 0.09,
+              scrollTrigger: { trigger: bentoGrid, start: "top 78%", once: true },
+            });
+          }
+        }
+      }
+
+      // ---------- Inline type pills: flash in place ----------
+      const pills = document.querySelectorAll(".type-pill");
+      if (pills.length) {
+        gsap.from(pills, {
+          scale: 0.68,
+          opacity: 0,
+          y: 14,
+          rotation: -2,
+          duration: 0.6,
+          ease: "power3.out",
+          stagger: 0.12,
+          scrollTrigger: { trigger: pills[0], start: "top 85%", once: true },
+        });
+      }
+
+      // ---------- Craft: gallery wipes + pinned header settle ----------
+      const craftFigures = document.querySelectorAll("#craft figure");
+      craftFigures.forEach((f) => {
+        const cap = f.querySelector("figcaption");
+        gsap.fromTo(f,
+          { clipPath: "inset(0 0 100% 0)", y: 24, opacity: 0.55 },
+          {
+            clipPath: "inset(0 0 0% 0)",
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: "power3.out",
+            scrollTrigger: { trigger: f, start: "top 88%", once: true },
+          });
+        if (cap) {
+          gsap.from(cap, {
+            y: 10,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.4,
+            scrollTrigger: { trigger: f, start: "top 82%", once: true },
+          });
+        }
+      });
+      const craftPin = document.querySelector("#craft .split-pin");
+      if (craftPin) {
+        gsap.from(craftPin.children, {
+          y: 22,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: { trigger: craftPin, start: "top 82%", once: true },
+        });
+      }
+
+      // ---------- Film rack (accordions): panels arrive in a row ----------
+      const rackButtons = document.querySelectorAll(".film-rack > button");
+      if (rackButtons.length) {
+        gsap.from(rackButtons, {
+          y: 42,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.08,
+          scrollTrigger: { trigger: rackButtons[0], start: "top 85%", once: true },
+        });
+      }
+
+      // ---------- Specifications: the table draws itself ----------
+      const specTable = document.getElementById("specData");
+      if (specTable) {
+        gsap.from(specTable.children, {
+          y: 16,
+          opacity: 0,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.045,
+          scrollTrigger: { trigger: specTable, start: "top 82%", once: true },
+        });
+      }
+      const specsSection = document.getElementById("specs");
+      if (specsSection) {
+        gsap.from(specsSection.querySelectorAll("h2, #copySpecs"), {
+          y: 22,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.12,
+          ease: "power3.out",
+          scrollTrigger: { trigger: specsSection, start: "top 85%", once: true },
+        });
+      }
+
+      // ---------- CTA: ambient pan + closing line rises ----------
+      const acquire = document.getElementById("acquire");
+      if (acquire) {
+        const ctaPanel = acquire.querySelector(".relative.overflow-hidden");
+        const ctaBg = ctaPanel && ctaPanel.querySelector("img");
+        if (ctaBg) {
+          gsap.fromTo(ctaBg,
+            { yPercent: -6, scale: 1.12 },
+            {
+              yPercent: 6,
+              scale: 1.12,
+              ease: "none",
+              scrollTrigger: { trigger: ctaPanel, start: "top bottom", end: "bottom top", scrub: true },
+            });
+        }
+        if (ctaPanel) {
+          gsap.from(ctaPanel.querySelectorAll("h2, p, .flex"), {
+            y: 26,
+            opacity: 0,
+            duration: 0.9,
+            stagger: 0.1,
+            ease: "power3.out",
+            scrollTrigger: { trigger: ctaPanel, start: "top 78%", once: true },
+          });
+        }
+      }
+
+      // ---------- Footer: resolve into place ----------
+      const foot = document.querySelector("footer");
+      if (foot) {
+        gsap.from(foot.children, {
+          y: 18,
+          opacity: 0,
+          duration: 0.7,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: { trigger: foot, start: "top 92%", once: true },
+        });
+      }
+
+      ScrollTrigger.refresh();
+
+      // Recalculate trigger positions once lazy media finishes loading, so the
+      // pinned split holds for the full gallery instead of releasing early.
+      let refreshFrame;
+      const scheduleRefresh = () => {
+        cancelAnimationFrame(refreshFrame);
+        refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+      };
+      window.addEventListener("load", scheduleRefresh);
+      document.querySelectorAll("img").forEach((el) => {
+        if (!el.complete) {
+          el.addEventListener("load", scheduleRefresh, { once: true });
+          el.addEventListener("error", scheduleRefresh, { once: true });
+        }
+      });
+    });
+  </script>
+
+  <!-- ==========================================================================
+       INTERACTIVE 3D EXPLODED VIEW (Three.js + GSAP)
+       --------------------------------------------------------------------------
+       A real 3D Canon AE-1 loaded from ./assets/models/canon-ae1-components.glb,
+       whose geometry was separated off-line into eight independently
+       addressable components (FD lens assembly, breech-lock mount, main body,
+       pentaprism viewfinder, upper housing, rear cover, rewind knob, advance
+       lever).
+
+       ASSET SWAP POINT: point MODEL_URL at another .glb and list its component
+       mesh names in COMPONENTS below. The rest of the viewer (framing, explode,
+       hover, controls) works unchanged. The `components-camera.png` render
+       remains the static fallback whenever WebGL or the model fails to load.
+       ========================================================================== -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    // Model + component line-up. `key` must match a node name inside the GLB;
+    // `dir`/`amount` are the exploded offset (in model units) applied on top of
+    // the assembled pose, so the entry with amount 0 stays put as the anchor.
+    const MODEL_URL = "./assets/models/canon-ae1-components.glb";
+    const COMPONENTS = [
+      { key: "lens_assembly",     index: "01", label: "FD 50mm lens assembly",     dir: [0.12, -0.2, 1],  amount: 0.075 },
+      { key: "lens_mount",        index: "02", label: "Breech-lock FD mount",      dir: [0.04, -0.05, 1], amount: 0.038 },
+      { key: "main_body",         index: "03", label: "Main body & chassis",       dir: [0, 0, 0],        amount: 0 },
+      { key: "viewfinder_housing", index: "04", label: "Pentaprism viewfinder",    dir: [0, 1, -0.35],    amount: 0.06 },
+      { key: "upper_housing",     index: "05", label: "Upper housing & top plate", dir: [0, 1, -0.12],    amount: 0.045 },
+      { key: "rear_cover",        index: "06", label: "Rear cover",                dir: [0, -0.12, -1],   amount: 0.062 },
+      { key: "rewind_knob",       index: "07", label: "Film rewind knob",          dir: [-1, 0.5, -0.25], amount: 0.06 },
+      { key: "advance_lever",     index: "08", label: "Film advance lever",        dir: [1, 0.5, -0.25],  amount: 0.06 },
+    ];
+
+    const viewerStage = document.getElementById("viewerStage");
+    if (viewerStage) initExplodedViewer();
+
+    async function initExplodedViewer() {
+      const root = document.getElementById("viewer3d");
+      const stage = viewerStage;
+      const fallback = document.getElementById("viewerFallback");
+      const ui = document.getElementById("viewerUI");
+      const labelEl = document.getElementById("viewerLabel");
+      const toggleBtn = document.getElementById("viewerToggle");
+      const resetBtn = document.getElementById("viewerReset");
+
+      let THREE, GLTFLoader, RoomEnvironment;
+      try {
+        THREE = await import("three");
+        ({ GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js"));
+        ({ RoomEnvironment } = await import("three/addons/environments/RoomEnvironment.js"));
+      } catch (err) {
+        console.info("[AE-1 viewer] three.js unavailable — keeping static image:", err && err.message);
+        return;
+      }
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const AMBER = new THREE.Color(0xc9a876);
+
+      // ---------- Renderer ----------
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+      } catch (err) {
+        console.info("[AE-1 viewer] WebGL unavailable — keeping static image:", err && err.message);
+        return;
+      }
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setClearColor(0x000000, 0);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.02;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      Object.assign(renderer.domElement.style, { width: "100%", height: "100%", display: "block" });
+      renderer.domElement.style.touchAction = "pan-y";
+      renderer.domElement.style.cursor = "grab";
+      stage.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+
+      // ---------- Lighting ----------
+      scene.add(new THREE.HemisphereLight(0x2a2f39, 0x050506, 0.55));
+
+      const key = new THREE.DirectionalLight(0xfff2df, 2.1);
+      key.position.set(2.6, 3.4, 2.4);
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      key.shadow.camera.near = 1;
+      key.shadow.camera.far = 14;
+      key.shadow.camera.left = -3;
+      key.shadow.camera.right = 3;
+      key.shadow.camera.top = 3;
+      key.shadow.camera.bottom = -3;
+      key.shadow.bias = -0.0006;
+      key.shadow.radius = 3;
+      scene.add(key);
+
+      const rim = new THREE.DirectionalLight(0x9fb0c6, 1.15);
+      rim.position.set(-2.8, 1.6, -2.6);
+      scene.add(rim);
+
+      const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+      fill.position.set(-1.2, -0.6, 2.6);
+      scene.add(fill);
+
+      // ---------- Model ----------
+      // Loads the real GLB, whose geometry was separated into 8 component
+      // meshes off-line (see COMPONENTS). Each component gets its own group so
+      // it can be exploded, hovered and labelled independently. Swap the URL
+      // to change the model; adjust COMPONENTS to change the line-up.
+      const pivot = new THREE.Group();      // receives drag rotation
+      const floatGroup = new THREE.Group(); // receives idle drift
+      const scrollGroup = new THREE.Group(); // receives scroll-driven counter-rotation
+      const model = new THREE.Group();      // holds all geometry, centered on origin
+      const rig = new THREE.Group();        // centered + scaled GLB container
+      model.add(rig);
+      scrollGroup.add(model);
+      floatGroup.add(scrollGroup);
+      pivot.add(floatGroup);
+      scene.add(pivot);
+
+      const parts = [];
+
+      let gltf;
+      try {
+        gltf = await new GLTFLoader().loadAsync(MODEL_URL);
+      } catch (err) {
+        console.info("[AE-1 viewer] model unavailable — keeping static image:", err && err.message);
+        return;
+      }
+
+      const src = gltf.scene;
+      const rootNode = src.getObjectByName("Canon_AE1") || src;
+
+      COMPONENTS.forEach((c) => {
+        const mesh = rootNode.getObjectByName(c.key);
+        if (!mesh) {
+          console.info("[AE-1 viewer] component missing from model:", c.key);
+          return;
+        }
+        mesh.position.set(0, 0, 0);
+        mesh.rotation.set(0, 0, 0);
+        mesh.scale.set(1, 1, 1);
+        const g = new THREE.Group();
+        g.add(mesh);
+        rig.add(g);
+        g.userData = {
+          key: c.key,
+          label: c.label,
+          index: c.index,
+          dir: new THREE.Vector3(c.dir[0], c.dir[1], c.dir[2]).normalize(),
+          amount: c.amount,
+          home: new THREE.Vector3(),
+          explode: new THREE.Vector3(),
+          p: 0,
+          glow: [],
+        };
+        parts.push(g);
+      });
+
+      if (!parts.length) {
+        console.info("[AE-1 viewer] no components resolved — keeping static image");
+        return;
+      }
+
+      // Materials are cloned per component so hover highlighting stays isolated.
+      parts.forEach((g) =>
+        g.traverse((o) => {
+          if (!o.isMesh) return;
+          o.castShadow = true;
+          o.receiveShadow = true;
+          o.material = o.material.clone();
+        })
+      );
+
+      // Center the assembled camera on the origin and scale it into the
+      // viewer's working range (~1.45 units across, as the old build was).
+      const assembled = new THREE.Box3().setFromObject(rig);
+      const assembledSize = assembled.getSize(new THREE.Vector3());
+      const assembledCenter = assembled.getCenter(new THREE.Vector3());
+      const fitScale = 1.45 / Math.max(assembledSize.x, assembledSize.y, assembledSize.z);
+      rig.scale.setScalar(fitScale);
+      rig.position.copy(assembledCenter).multiplyScalar(-fitScale);
+
+      // ----- Home / exploded transforms + highlight baselines -----
+      parts.forEach((g) => {
+        const u = g.userData;
+        u.home.copy(g.position);
+        u.explode.copy(g.position).addScaledVector(u.dir, u.amount);
+        g.traverse((o) => {
+          if (o.isMesh) u.glow.push({ mesh: o, baseColor: o.material.emissive.clone(), baseIntensity: o.material.emissiveIntensity });
+        });
+      });
+
+      const applyExplode = () => {
+        parts.forEach((g) => {
+          const u = g.userData;
+          g.position.lerpVectors(u.home, u.explode, u.p);
+        });
+      };
+
+      // Center the model on its fully-exploded bounds, then frame the camera.
+      let frameRadius = 1.8;
+      (function centerModel() {
+        parts.forEach((g) => (g.userData.p = 1));
+        applyExplode();
+        model.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+        frameRadius = 0.5 * Math.max(size.x, size.y, size.z) * 1.15;
+        model.position.copy(center).multiplyScalar(-1);
+      })();
+
+      // Contact shadow
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.ShadowMaterial({ opacity: 0.34 }));
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.85;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // ---------- Framing / resize ----------
+      const fitCamera = () => {
+        const w = Math.max(stage.clientWidth, 1);
+        const h = Math.max(stage.clientHeight, 1);
+        camera.aspect = w / h;
+        const vFov = (camera.fov * Math.PI) / 180;
+        const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+        const dist = (frameRadius / Math.sin(Math.min(vFov, hFov) / 2)) * 1.06;
+        camera.position.set(0, 0, dist);
+        camera.lookAt(0, 0, 0);
+        camera.updateProjectionMatrix();
+      };
+
+      const resize = () => {
+        const w = Math.max(stage.clientWidth, 1);
+        const h = Math.max(stage.clientHeight, 1);
+        renderer.setSize(w, h, false);
+        fitCamera();
+      };
+      resize();
+
+      const ro = new ResizeObserver(resize);
+      ro.observe(stage);
+
+      // ---------- Interaction state ----------
+      const stateWord = document.getElementById("viewerStateWord");
+      const baseRotY = 0.6;
+      const baseRotX = 0.26;
+      let dragY = 0;
+      let dragX = 0;
+      let velY = 0;
+      let velX = 0;
+      let dragging = false;
+      let idleT = 0;
+      let idleActive = false;
+      let exploded = false;
+      // Scroll-progress -> explode driver. When the user grabs the controls we
+      // lift manualOverride so the scrub stops fighting the tween and returns
+      // control once they release.
+      let manualOverride = false;
+
+      const el = renderer.domElement;
+
+      const clampTilt = () => {
+        const total = baseRotX + dragX;
+        const clamped = THREE.MathUtils.clamp(total, -0.55, 0.8);
+        dragX = clamped - baseRotX;
+      };
+
+      // ---------- Selection + hover identification ----------
+      const raycaster = new THREE.Raycaster();
+      const pointerNdc = new THREE.Vector2();
+      let hoveredKey = null;
+      let activeKey = null;
+
+      const setListActive = (key) => {
+        document.querySelectorAll(".comp-item").forEach((li) => {
+          li.classList.toggle("is-active", li.dataset.comp === key);
+        });
+      };
+
+      // One source of truth for the mesh glow: hover is transient and bright,
+      // selection is persistent and quiet. They never overwrite each other.
+      const refreshGlow = () => {
+        parts.forEach((g) => {
+          const k = g.userData.key;
+          const isHover = k === hoveredKey;
+          const isActive = k === activeKey;
+          const on = isHover || isActive;
+          const intensity = isHover ? 0.6 : 0.34;
+          g.userData.glow.forEach((e) => {
+            e.mesh.material.emissive.copy(on ? AMBER : e.baseColor);
+            e.mesh.material.emissiveIntensity = on ? intensity : e.baseIntensity;
+          });
+        });
+      };
+
+      // Persistent selection. Kept separate from hover so the chosen part stays
+      // lit until another is chosen.
+      const setActive = (index) => {
+        const g = parts[index];
+        const key = g ? g.userData.key : null;
+        if (key === activeKey) return;
+        activeKey = key;
+        refreshGlow();
+      };
+
+      const setHover = (group, clientX, clientY) => {
+        const key = group ? group.userData.key : null;
+        if (key !== hoveredKey) {
+          hoveredKey = key;
+          refreshGlow();
+          setListActive(key);
+        }
+        if (!dragging) el.style.cursor = key ? "pointer" : "grab";
+        if (!group || !labelEl) {
+          if (labelEl) labelEl.classList.add("hidden");
+          return;
+        }
+        const rect = stage.getBoundingClientRect();
+        labelEl.innerHTML = '<span class="lbl-idx">' + group.userData.index + "</span>" + group.userData.label;
+        labelEl.style.left = clientX - rect.left + "px";
+        labelEl.style.top = clientY - rect.top + "px";
+        labelEl.classList.remove("hidden");
+      };
+
+      const handleHover = (e) => {
+        const rect = el.getBoundingClientRect();
+        pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointerNdc, camera);
+        const hits = raycaster.intersectObjects(parts, true);
+        let g = null;
+        if (hits.length) {
+          let o = hits[0].object;
+          while (o && !(o.userData && o.userData.key)) o = o.parent;
+          g = o || null;
+        }
+        setHover(g, e.clientX, e.clientY);
+      };
+
+      // Hovering a card also lifts its mesh (transient, no selection change).
+      document.querySelectorAll(".comp-item").forEach((li) => {
+        li.addEventListener("mouseenter", () => {
+          const g = parts.find((p) => p.userData.key === li.dataset.comp);
+          if (!g) return;
+          hoveredKey = g.userData.key;
+          refreshGlow();
+          setListActive(g.userData.key);
+        });
+        li.addEventListener("mouseleave", () => setHover(null));
+      });
+
+      // Selecting a 3D part: highlight it and drive the shared line-up index.
+      const pickComponent = (e) => {
+        const rect = el.getBoundingClientRect();
+        pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointerNdc, camera);
+        const hits = raycaster.intersectObjects(parts, true);
+        if (!hits.length) return;
+        let o = hits[0].object;
+        while (o && !(o.userData && o.userData.key)) o = o.parent;
+        if (!o) return;
+        const index = parts.indexOf(o);
+        if (index < 0) return;
+        setActive(index);
+        const lp = window.__ae1Lineup;
+        if (lp && typeof lp.select === "function") lp.select(index);
+      };
+
+      // Selection driven the other way: from the line-up (scroll or card click).
+      window.addEventListener("ae1:active-change", (e) => {
+        const d = e.detail || {};
+        if (typeof d.index === "number") setActive(d.index);
+      });
+      const syncActiveFromLineup = () => {
+        const lp = window.__ae1Lineup;
+        if (lp && typeof lp.getActive === "function") {
+          const i = lp.getActive();
+          if (i >= 0) setActive(i);
+        }
+      };
+      syncActiveFromLineup();
+      window.addEventListener("ae1:lineup-ready", syncActiveFromLineup);
+
+      // ---------- Drag to rotate ----------
+      let lastX = 0;
+      let lastY = 0;
+      let downX = 0;
+      let downY = 0;
+      let downAt = 0;
+
+      el.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        dragging = true;
+        idleActive = false;
+        velY = 0;
+        velX = 0;
+        el.style.cursor = "grabbing";
+        if (e.pointerType === "mouse") el.setPointerCapture(e.pointerId);
+        lastX = e.clientX;
+        lastY = e.clientY;
+        downX = e.clientX;
+        downY = e.clientY;
+        downAt = performance.now();
+      });
+
+      el.addEventListener("pointermove", (e) => {
+        if (!dragging) {
+          if (e.pointerType === "mouse") handleHover(e);
+          return;
+        }
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        const sx = e.pointerType === "mouse" ? 0.006 : 0.008;
+        const sy = e.pointerType === "mouse" ? 0.004 : 0.003;
+        dragY += dx * sx;
+        dragX += dy * sy;
+        clampTilt();
+        velY = dx * sx;
+        velX = dy * sy;
+      });
+
+      const endDrag = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        el.style.cursor = hoveredKey ? "pointer" : "grab";
+        if (e.pointerType === "mouse") {
+          try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+        // A tap that barely moved is a selection, not a rotate.
+        if (e.type === "pointerup") {
+          const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+          if (moved < 6 && performance.now() - downAt < 600) pickComponent(e);
+        }
+      };
+      el.addEventListener("pointerup", endDrag);
+      el.addEventListener("pointercancel", endDrag);
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
+      el.addEventListener("pointerleave", () => { if (!dragging) setHover(null); });
+
+      // ---------- Controls ----------
+      // Refresh the badge + toggle from the actual exploded state (either the
+      // menu's `exploded` flag or, when scroll-driven, the average part spread).
+      const refreshStateUI = (spread) => {
+        const out = spread >= 0.5;
+        if (toggleBtn) {
+          toggleBtn.textContent = out ? "Assemble" : "Explode";
+          toggleBtn.setAttribute("aria-pressed", String(out));
+        }
+        if (root) root.dataset.state = out ? "exploded" : "assembled";
+        if (stateWord) stateWord.textContent = out ? "Exploded view" : "Assembled view";
+      };
+
+      // Smoothstep: gives each part a brief settle instead of a linear crawl.
+      const smoothstep = (x) => {
+        const c = THREE.MathUtils.clamp(x, 0, 1);
+        return c * c * (3 - 2 * c);
+      };
+
+// Drive the explode depth across all parts as a scrolling cascade:
+// the deeper into the scroll the further along the ladder gets to run,
+// so early parts lead out first and the body follows last.
+      const applyScrollExplode = (t) => {
+        manualOverride = false;
+        parts.forEach((g, i) => {
+          g.userData.p = smoothstep(t * parts.length - i);
+        });
+        applyExplode();
+        // Counter-rotate the whole assembly while it spreads: a subtle turn
+        // that reads as the camera handing you its insides.
+        scrollGroup.rotation.y = (1 - t) * 0.22;
+        scrollGroup.rotation.x = (1 - t) * -0.06;
+        refreshStateUI(t);
+      };
+
+      const setExplode = (target, animate) => {
+        exploded = target;
+        if (!animate || reduceMotion || typeof gsap === "undefined") {
+          parts.forEach((g) => (g.userData.p = target ? 1 : 0));
+          applyExplode();
+          refreshStateUI(target ? 1 : 0);
+          return;
+        }
+        manualOverride = true;
+        const tl = gsap.timeline({ onUpdate: applyExplode });
+        parts.forEach((g, i) => {
+          tl.to(g.userData, { p: target ? 1 : 0, duration: 0.9, ease: "power3.inOut" }, i * 0.06);
+        });
+        tl.call(() => { manualOverride = false; });
+        refreshStateUI(target ? 1 : 0);
+      };
+
+      if (toggleBtn) toggleBtn.addEventListener("click", () => setExplode(!exploded, true));
+
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          idleActive = !reduceMotion;
+          if (reduceMotion || typeof gsap === "undefined") {
+            dragX = 0; dragY = 0; velX = 0; velY = 0;
+            parts.forEach((g) => (g.userData.p = 1));
+            applyExplode();
+            refreshStateUI(1);
+            return;
+          }
+          const proxy = { x: dragX, y: dragY };
+          gsap.to(proxy, {
+            x: 0, y: 0, duration: 0.8, ease: "power3.out",
+            onUpdate: () => { dragX = proxy.y; dragY = proxy.x; },
+          });
+          manualOverride = false;
+          parts.forEach((g) => (g.userData.p = 0));
+          applyExplode();
+          scrollGroup.rotation.set(0, 0, 0);
+          refreshStateUI(0);
+        });
+      }
+
+      // ---------- Scroll-driven reveal (the engineered peak) ----------
+      if (!reduceMotion && typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+        // Scope the explosion to the sticky stage's hold. On desktop the stage
+        // is kept by CSS position:sticky inside the components row, so we run
+        // from the moment it hits its pin (top offset) until that pin releases
+        // (the parent column's bottom edge reaching pin + stage height). On
+        // mobile there is no sticky, so the window is simply the stage passing
+        // through the viewport. Either way the parts leave the body while the
+        // line-up cards climb past — scroll scrubs, drag/toggle override.
+        const pinHost = root.closest(".split-pin");
+        const pins =
+          pinHost && window.getComputedStyle(pinHost).position === "sticky";
+        const pinTop =
+          pins && pinHost ? Math.max(parseFloat(window.getComputedStyle(pinHost).top) || 0, 0) : null;
+        ScrollTrigger.create({
+          id: "ae1-scroll-explode",
+          trigger: root,
+          // Explode while the stage travels from the bottom of the viewport to
+          // its pinned place (the CSS sticky offset), or to mid-viewport on
+          // non-sticky layouts. By the time the line-up cards climb past, the
+          // model stands fully apart and hands the narrative to the deck.
+          start: "top bottom",
+          end: () => "top " + (pinTop != null ? pinTop : "45%"),
+          scrub: 0.5,
+          onUpdate: (st) => {
+            if (!manualOverride) applyScrollExplode(st.progress);
+          },
+        });
+      }
+
+      // ---------- Render loop ----------
+      let raf = 0;
+      let visible = true;
+      let pageActive = true;
+      const clock = new THREE.Clock();
+
+      const tick = () => {
+        raf = requestAnimationFrame(tick);
+        const dt = Math.min(clock.getDelta(), 0.05);
+
+        if (!dragging) {
+          dragY += velY;
+          dragX += velX;
+          velY *= 0.92;
+          velX *= 0.92;
+          if (Math.abs(velY) < 1e-4) velY = 0;
+          if (Math.abs(velX) < 1e-4) velX = 0;
+          clampTilt();
+        }
+
+        if (idleActive && !reduceMotion) idleT += dt;
+
+        floatGroup.rotation.y = idleActive ? Math.sin(idleT * 0.24) * 0.08 : 0;
+        floatGroup.position.y = idleActive ? Math.sin(idleT * 0.7) * 0.02 : 0;
+        pivot.rotation.y = baseRotY + dragY;
+
+        renderer.render(scene, camera);
+      };
+
+      const play = () => {
+        if (raf) return;
+        clock.getDelta();
+        raf = requestAnimationFrame(tick);
+      };
+      const stop = () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      };
+
+      new IntersectionObserver(
+        (entries) => {
+          visible = entries[0].isIntersecting;
+          visible && pageActive ? play() : stop();
+        },
+        { rootMargin: "120px" }
+      ).observe(root);
+
+      document.addEventListener("visibilitychange", () => {
+        pageActive = !document.hidden;
+        visible && pageActive ? play() : stop();
+      });
+
+      // ---------- Entrance ----------
+      const revealUI = () => {
+        if (root) root.classList.add("is-ready");
+        if (ui) ui.classList.remove("hidden");
+        if (fallback) {
+          fallback.style.opacity = "0";
+          window.setTimeout(() => { fallback.style.display = "none"; }, 750);
+        }
+      };
+
+      const entrance = () => {
+        revealUI();
+        // Under reduced motion / no GSAP: static exploded view, matching the
+        // exploded fallback render — no motion at all, just the parts apart.
+        if (reduceMotion || typeof gsap === "undefined") {
+          setExplode(true, false);
+          idleActive = false;
+          play();
+          return;
+        }
+        parts.forEach((g) => (g.userData.p = 0));
+        applyExplode();
+        scrollGroup.rotation.set(0, 0, 0);
+        refreshStateUI(0);
+        model.scale.setScalar(0.88);
+        floatGroup.position.y = -0.2;
+
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+        tl.to(model.scale, { x: 1, y: 1, z: 1, duration: 1.0 }, 0);
+        tl.to(floatGroup.position, { y: 0, duration: 1.0 }, 0);
+        tl.add(() => { idleActive = true; }, ">-0.25");
+        play();
+      };
+
+      let entered = false;
+      const startEntrance = () => {
+        if (entered) return;
+        entered = true;
+        entrance();
+      };
+
+      if (!reduceMotion && typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+        gsap.registerPlugin(ScrollTrigger);
+        ScrollTrigger.create({ trigger: root, start: "top 82%", once: true, onEnter: startEntrance });
+        window.setTimeout(startEntrance, 3200);
+      } else {
+        startEntrance();
+      }
+
+      // Expose a tiny API for debugging / future GLB swap.
+      window.__ae1Viewer = {
+        scene, camera, renderer, parts, setExplode, setActive,
+        scrollGroup, exploded: () => exploded, manualOverride: () => manualOverride,
+      };
+    }
+  </script>
+</body>
+</html>
